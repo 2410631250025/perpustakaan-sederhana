@@ -29,6 +29,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('books', BookController::class);
     Route::resource('categories', CategoryController::class);
     Route::resource('members', MemberController::class);
+    Route::resource('borrowings', BorrowingController::class)->except(['edit', 'update']);
+    Route::put('/borrowings/{id}/return', [BorrowingController::class, 'returnBook'])->name('borrowings.return');
 
     // Khusus Admin
     Route::middleware(['can:isAdmin'])->group(function () {
