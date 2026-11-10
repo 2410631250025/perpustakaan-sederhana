@@ -35,7 +35,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('members', MemberController::class);
     
     // Modul Peminjaman
-    Route::resource('borrowings', BorrowingController::class)->except(['edit', 'update']);
+    Route::resource('borrowings', BorrowingController::class);
     Route::put('/borrowings/{id}/return', [BorrowingController::class, 'returnBook'])->name('borrowings.return');
 
     // Khusus Admin (Manajemen User)
