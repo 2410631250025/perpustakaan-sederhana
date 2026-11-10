@@ -5,69 +5,75 @@ namespace App\Http\Controllers;
 use App\Models\Borrowing;
 use App\Models\BorrowingDetail;
 use App\Models\Book;
-use Carbon\Carbon;
+use App\Models\Member;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class BorrowingController extends Controller
 {
-    public function index() {
-        $borrowings = Borrowing::with(['details.book'])->get();
+    public function index() 
+    {
+        $borrowings = Borrowing::with(['member', 'user', 'details.book'])->latest()->paginate(10);
         return view('borrowings.index', compact('borrowings'));
-        }
+    }
 
     public function create() {
         $members = Member::all();
         $books = Book::where('stock', '>', 0)->get();
-        return view('borrowings.create', compcat('members', 'books'));
+        return view('borrowings.create', compact('members', 'books'));
     }
     
-    public function store(Request $request) {
+    public function store(Request $request) 
+    {
         $request->validated([
             'member_id' => 'required|exists:members.id',
-            'book_ids' => 'required|array', //ini untuk menerima array ID buku dari form
-            'book_ids.*' => 'exists:book.id'
+            'book_id' => 'required|exists:books,id', //sesuaikan jika pakai array/banyak buku
+            'due_date' =>'required|date|after:today',
         ]);
 
-        DB::transaction(function () use ($request) {
+        DB::beginTransaction();
+        try {
             $borrowing = Borrowing::create([
-                'user_id' => auth()->user()->id, //ini buat nyatet petugas/admin yang login
+                'user_id' => auth()->id, //ini buat nyatet petugas/admin yang login
                 'member_id' => $request->member_id,
-                'borrow_date' => Carbon::now()->toDateString(),
-                'due_date' => Carbon::now()->addDays(7)->toDateString(), 
-                'status' => 'borrowed'
+                'borrow_date' => now(),
+                'due_date' => $request->due_date,
+                'status' => 'Dipinjam',
             ]);
 
-            foreach ($request->book_ids as $bookId) {
-                BorrowingDetail::create([
-                    'borrowing_id' => $borrowing->id,
-                    'book_id' =>$bookId
-                ]);
+            BorrowingDetail::create([
+                'borrowing_id' => $borrowing->id,
+                'book_id' => $request->book_id,
+            ]);
 
-                Book::find($bookId)->decrement('stok');
-            }
-        });
+            $book = Book::find($request->book_id);
+            $book->decrement('stok');
 
-        return redirect()->route('borrowings.index')->with('success', 'Peminjaman Berhasil Dicatat');
+            DB:commit();
+            return redirect()->route('borrowings.index')->with('sukses', 'Peminjaman berhasil dicatat');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->with('Eror', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
-    public function returnBook($id) {
-        $borrowing = Borrowing::with('details')->findOrFail($id);
-
-        if ($borrowing->status === 'returned') {
-            return back()->with('error', 'Buku ini sudah dikembalikan.');
-        }
-
-        DB::transaction(function () use ($borrowing) {
-            $borrowing->update([
-                'return_date' => Carbon::now()->toDateString(),
-                'status' => 'returned'
-            ]);
+    public function returnBook($id) 
+    {
+        DB::beginTransaction();
+        try {
+            $borrowing = Borrowing::with('details.book')->findOrFail($id);
+            $borrowing->update(['status' => 'Dikembalikan']);
 
             foreach ($borrowing->details as $detail) {
-                Book::find($detail->book-id)->increment('stock');
+                $detail->book->increment('stock');
             }
-        });
 
-        return redirect()->route('borrowings.index')->with('success', 'Buku berhasil dikembalikan');
+        DB::commit();
+        return redirect()->route('borrowings.index')->with('sukses', 'Buku berhasil dikembalikan');
+    } catch (\Exception $e) {
+        DB::rollback();
+        return back()->with('Error', 'Gagal memproses pengembalian');
+    }
+    
     }
 }

@@ -12,6 +12,7 @@
             <a href="{{ route('books.index') }}">Buku</a> |
             <a href="{{ route('categories.index') }}">Kategori</a> |
             <a href="{{ route('members.index') }}">Anggota</a> |
+             <a href="{{ route('borrowings.index') }}">Data Peminjaman</a> |
 
             {{-- Pembatasan Hak Akses: Menu ini HANYA TAMPIL untuk Admin --}}
             @can('isAdmin')

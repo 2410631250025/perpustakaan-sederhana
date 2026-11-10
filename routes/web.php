@@ -33,11 +33,16 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('books', BookController::class);
     Route::resource('members', MemberController::class);
     
+ fitur_borrowing_lanjutan
+    // Modul Peminjaman
+    Route::resource('borrowings', BorrowingController::class);
+
     // Modul Kategori - HANYA MELIHAT (Admin & Petugas)
     Route::resource('categories', CategoryController::class)->only(['index', 'show']);
     
     // Modul Peminjaman (Admin & Petugas)
     Route::resource('borrowings', BorrowingController::class)->except(['edit', 'update']);
+ main
     Route::put('/borrowings/{id}/return', [BorrowingController::class, 'returnBook'])->name('borrowings.return');
 
     // ==========================================
