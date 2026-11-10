@@ -26,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
             return $user->role === 'admin';
         });
 
-        // (Opsional) Gate untuk mengecek apakah user adalah Petugas
+        // Gate untuk mengecek apakah user adalah Petugas
         Gate::define('isPetugas', function (User $user) {
             return $user->role === 'petugas';
         });
