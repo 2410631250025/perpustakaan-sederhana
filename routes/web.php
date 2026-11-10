@@ -26,21 +26,31 @@ Route::middleware(['auth'])->group(function () {
     // Route Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Dashboard
+    // Dashboard (Admin & Petugas)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Modul CRUD (Buku, Kategori, Anggota)
+    // Modul Buku & Anggota (Admin & Petugas bisa mengelola penuh)
     Route::resource('books', BookController::class);
-    Route::resource('categories', CategoryController::class);
     Route::resource('members', MemberController::class);
     
-    // Modul Peminjaman
+    // Modul Kategori - HANYA MELIHAT (Admin & Petugas)
+    Route::resource('categories', CategoryController::class)->only(['index', 'show']);
+    
+    // Modul Peminjaman (Admin & Petugas)
     Route::resource('borrowings', BorrowingController::class)->except(['edit', 'update']);
     Route::put('/borrowings/{id}/return', [BorrowingController::class, 'returnBook'])->name('borrowings.return');
 
-    // Khusus Admin (Manajemen User)
+    // ==========================================
+    // KHUSUS ADMIN (Dilindungi Gate 'isAdmin')
+    // ==========================================
     Route::middleware(['can:isAdmin'])->group(function () {
-        Route::resource('users', UserController::class);
+        
+        // Mengelola User
+        Route::resource('users', UserController::class); 
+        
+        // Mengelola Kategori (Create, Store, Edit, Update, Destroy)
+        Route::resource('categories', CategoryController::class)->except(['index', 'show']);
+        
     });
     
 });
