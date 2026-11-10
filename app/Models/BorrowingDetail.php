@@ -8,7 +8,7 @@ class BorrowingDetail extends Model
 {
     protected $guarded = ['id'];
 
-    public funtion book() {
-        return $this-.belongsTo(book::class);
+    public function book() {
+        return $this->belongsTo(Book::class);
     }
 }
