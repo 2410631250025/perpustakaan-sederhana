@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('members', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('phone');
-            $table->text('address');
-            $table->timestamps();
-        });
-    }
-
+        $table->id();
+        $table->string('code')->unique(); // Kode Anggota (cth: MB001)
+        $table->string('name');
+        $table->string('email')->unique();
+        $table->string('phone');
+        $table->text('address');
+        $table->timestamps();
+    });
+}
     /**
      * Reverse the migrations.
      */
