@@ -17,7 +17,8 @@ class BorrowingController extends Controller
         return view('borrowings.index', compact('borrowings'));
     }
 
-    public function create() {
+    public function create() 
+    {
         $members = Member::all();
         $books = Book::where('stock', '>', 0)->get();
         return view('borrowings.create', compact('members', 'books'));
@@ -25,35 +26,46 @@ class BorrowingController extends Controller
     
     public function store(Request $request) 
     {
-        $request->validated([
-            'member_id' => 'required|exists:members.id',
-            'book_id' => 'required|exists:books,id', //sesuaikan jika pakai array/banyak buku
-            'due_date' =>'required|date|after:today',
+        $request->validate([
+            'member_id'   => 'required|exists:members,id',
+            'borrow_date' => 'required|date',
+            'due_date'    => 'required|date|after_or_equal:borrow_date',
+            'book_ids'    => 'required|array|min:1',
+            'book_ids.*'  => 'required|exists:books,id|distinct', // distinct mencegah buku yang sama dipilih 2x
+        ], [
+            'book_ids.*.distinct' => 'Tidak boleh memilih judul buku yang sama lebih dari satu kali dalam satu transaksi.'
         ]);
 
         DB::beginTransaction();
         try {
             $borrowing = Borrowing::create([
-                'user_id' => auth()->id, //ini buat nyatet petugas/admin yang login
-                'member_id' => $request->member_id,
-                'borrow_date' => now(),
-                'due_date' => $request->due_date,
-                'status' => 'Dipinjam',
+                'user_id'     => auth()->id(),
+                'member_id'   => $request->member_id,
+                'borrow_date' => $request->borrow_date,
+                'due_date'    => $request->due_date,
+                'status'      => 'Dipinjam',
             ]);
 
-            BorrowingDetail::create([
-                'borrowing_id' => $borrowing->id,
-                'book_id' => $request->book_id,
-            ]);
+            foreach ($request->book_ids as $bookId) {
+                $book = Book::findOrFail($bookId);
+                
+                if ($book->stock < 1) {
+                    throw new \Exception("Stok buku '{$book->title}' sudah habis.");
+                }
 
-            $book = Book::find($request->book_id);
-            $book->decrement('stok');
+                BorrowingDetail::create([
+                    'borrowing_id' => $borrowing->id,
+                    'book_id'      => $bookId,
+                ]);
 
-            DB:commit();
-            return redirect()->route('borrowings.index')->with('sukses', 'Peminjaman berhasil dicatat');
+                $book->decrement('stock');
+            }
+
+            DB::commit();
+            return redirect()->route('borrowings.index')->with('success', 'Peminjaman berhasil dicatat!');
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('Eror', 'Terjadi kesalahan: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
@@ -62,18 +74,22 @@ class BorrowingController extends Controller
         DB::beginTransaction();
         try {
             $borrowing = Borrowing::with('details.book')->findOrFail($id);
+            
+            if ($borrowing->status === 'Dikembalikan') {
+                return back()->with('error', 'Buku sudah dikembalikan sebelumnya.');
+            }
+
             $borrowing->update(['status' => 'Dikembalikan']);
 
             foreach ($borrowing->details as $detail) {
                 $detail->book->increment('stock');
             }
 
-        DB::commit();
-        return redirect()->route('borrowings.index')->with('sukses', 'Buku berhasil dikembalikan');
-    } catch (\Exception $e) {
-        DB::rollback();
-        return back()->with('Error', 'Gagal memproses pengembalian');
-    }
-    
+            DB::commit();
+            return redirect()->route('borrowings.index')->with('success', 'Buku berhasil dikembalikan dan stok diperbarui!');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->with('error', 'Gagal memproses pengembalian: ' . $e->getMessage());
+        }
     }
 }

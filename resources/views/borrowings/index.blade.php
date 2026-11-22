@@ -1,4 +1,4 @@
-@extends('layouts.app') {{-- Sesuaikan dengan layout utama project kalian --}}
+@extends('layouts.app')
 
 @section('content')
 <div class="container">
@@ -13,7 +13,7 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <table class="table table-bordered">
+    <table class="table table-bordered" border="1" cellpadding="8" cellspacing="0">
         <thead>
             <tr>
                 <th>No</th>
@@ -22,30 +22,30 @@
                 <th>Tanggal Pinjam</th>
                 <th>Tenggat (Due Date)</th>
                 <th>Status</th>
+                <th>Petugas</th>
                 <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
             @forelse($borrowings as $index => $borrowing)
             <tr>
-                <td>{{ $index + 1 }}</td>
-                <td>{{ $borrowing->member->nama ?? '-' }}</td>
+                <td>{{ $borrowings->firstItem() + $index }}</td>
+                <td>{{ $borrowing->member->name ?? '-' }}</td>
                 <td>
-                    <ul>
+                    <ul style="margin: 0; padding-left: 18px;">
                         @foreach($borrowing->details as $detail)
-                            <li>{{ $detail->book->judul ?? '-' }}</li>
+                            <li>{{ $detail->book->title ?? '-' }}</li>
                         @endforeach
                     </ul>
                 </td>
                 <td>{{ $borrowing->borrow_date }}</td>
                 <td>{{ $borrowing->due_date }}</td>
                 <td>
-                    <span class="badge bg-{{ $borrowing->status == 'dipinjam' ? 'warning' : 'success' }}">
-                        {{ ucfirst($borrowing->status) }}
-                    </span>
+                    <span>{{ $borrowing->status }}</span>
                 </td>
+                <td>{{ $borrowing->user->name ?? '-' }}</td>
                 <td>
-                    @if($borrowing->status == 'dipinjam')
+                    @if($borrowing->status == 'Dipinjam')
                         <form action="{{ route('borrowings.return', $borrowing->id) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('PUT')
@@ -58,10 +58,14 @@
             </tr>
             @empty
             <tr>
-                <td colspan="7" class="text-center">Belum ada data peminjaman.</td>
+                <td colspan="8" class="text-center">Belum ada data peminjaman.</td>
             </tr>
             @endforelse
         </tbody>
     </table>
+
+    <div class="mt-3">
+        {{ $borrowings->links() }}
+    </div>
 </div>
 @endsection

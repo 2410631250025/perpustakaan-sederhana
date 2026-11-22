@@ -1,43 +1,44 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard Perpustakaan</title>
-</head>
-<body>
-    <h1>Dashboard Utama</h1>
-    <p>Selamat datang, {{ auth()->user()->name }}!</p>
+@extends('layouts.app')
 
-    <div style="display: flex; gap: 20px; margin-top: 20px;">
-        <div style="border: 1px solid #ccc; padding: 15px; border-radius: 5px;">
+@section('title', 'Dashboard Utama')
+
+@section('content')
+    <h2>Dashboard Utama</h2>
+    <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 15px;">
+        Selamat datang, <strong>{{ auth()->user()->name }}</strong>!
+    </p>
+
+    {{-- Pola Warna Konsisten: Pink - Cream - Pink - Cream --}}
+    <div class="stats-grid">
+        <div class="stat-card pink">
             <h3>Jumlah Judul Buku</h3>
-            <p style="font-size: 24px; font-weight: bold;">{{ $totalBookTitles }}</p>
+            <p class="stat-number">{{ $totalBookTitles }}</p>
         </div>
-        <div style="border: 1px solid #ccc; padding: 15px; border-radius: 5px;">
+
+        <div class="stat-card cream">
             <h3>Total Stok Buku</h3>
-            <p style="font-size: 24px; font-weight: bold;">{{ $totalBookStock }}</p>
+            <p class="stat-number">{{ $totalBookStock }}</p>
         </div>
-        <div style="border: 1px solid #ccc; padding: 15px; border-radius: 5px;">
+
+        <div class="stat-card pink">
             <h3>Jumlah Anggota</h3>
-            <p style="font-size: 24px; font-weight: bold;">{{ $totalMembers }}</p>
+            <p class="stat-number">{{ $totalMembers }}</p>
         </div>
-        <div style="border: 1px solid #ccc; padding: 15px; border-radius: 5px;">
+
+        <div class="stat-card cream">
             <h3>Sedang Dipinjam</h3>
-            <p style="font-size: 24px; font-weight: bold;">{{ $totalBorrowed }}</p>
+            <p class="stat-number">{{ $totalBorrowed }}</p>
         </div>
     </div>
 
-    <br><br>
-    <h3>Menu Navigasi:</h3>
-    <ul>
-        <li><a href="{{ route('books.index') }}">Kelola Buku</a></li>
-        <li><a href="{{ route('categories.index') }}">Kelola Kategori</a></li>
-        <li><a href="{{ route('members.index') }}">Kelola Anggota</a></li>
-    </ul>
-
-    <form action="{{ route('logout') }}" method="POST">
-        @csrf
-        <button type="submit">Logout</button>
-    </form>
-</body>
-</html>
+    <div style="background-color: #FFFDF9; padding: 22px; border-radius: 14px; border: 1.5px solid var(--soft-blush);">
+        <h3 style="font-size: 16px; margin-bottom: 14px;">Akses Cepat Menu:</h3>
+        {{-- Pola Tombol Konsisten: Pink - Cream - Pink - Cream --}}
+        <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+            <a href="{{ route('books.index') }}" class="btn btn-pink">Kelola Buku</a>
+            <a href="{{ route('categories.index') }}" class="btn btn-cream">Kelola Kategori</a>
+            <a href="{{ route('members.index') }}" class="btn btn-pink">Kelola Anggota</a>
+            <a href="{{ route('borrowings.index') }}" class="btn btn-cream">Data Peminjaman</a>
+        </div>
+    </div>
+@endsection

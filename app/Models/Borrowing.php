@@ -9,21 +9,20 @@ class Borrowing extends Model
 {
     use HasFactory;
 
-    //untuk Anggota yang meminjam
+    protected $guarded = ['id'];
+
     public function member()
     {
         return $this->belongsTo(Member::class);
     }
 
-    //untuk petugas yang melayani
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    //detail buku bisa lebih dari satu buku
     public function details()
     {
-        return $this->hasMany(BorrowingDetails::class);
+        return $this->hasMany(BorrowingDetail::class);
     }
 }

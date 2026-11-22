@@ -1,44 +1,46 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <title>Tambah Anggota</title>
-</head>
-<body>
-    <h1>Tambah Anggota Baru</h1>
-    
+@extends('layouts.app')
+
+@section('title', 'Tambah Anggota')
+
+@section('content')
+    <h2>Tambah Anggota Baru</h2>
+
     @if ($errors->any())
-        <ul style="color: red;">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
+        <div class="alert alert-danger">
+            <ul style="margin: 0; padding-left: 18px;">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
     @endif
 
     <form action="{{ route('members.store') }}" method="POST">
         @csrf
-        <div>
-            <label>Kode Anggota:</label><br>
-            <input type="text" name="code" value="{{ old('code') }}" required>
+        <div class="mb-3">
+            <label for="code">Kode Anggota:</label>
+            <input type="text" id="code" name="code" value="{{ old('code') }}" required placeholder="Contoh: AGT-001">
         </div>
-        <div>
-            <label>Nama Lengkap:</label><br>
-            <input type="text" name="name" value="{{ old('name') }}" required>
+        <div class="mb-3">
+            <label for="name">Nama Lengkap:</label>
+            <input type="text" id="name" name="name" value="{{ old('name') }}" required placeholder="Masukkan nama lengkap...">
         </div>
-        <div>
-            <label>Email:</label><br>
-            <input type="email" name="email" value="{{ old('email') }}" required>
+        <div class="mb-3">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ old('email') }}" required placeholder="contoh@email.com">
         </div>
-        <div>
-            <label>No. Telepon:</label><br>
-            <input type="text" name="phone" value="{{ old('phone') }}" required>
+        <div class="mb-3">
+            <label for="phone">No. Telepon:</label>
+            <input type="text" id="phone" name="phone" value="{{ old('phone') }}" required placeholder="08xxxxxxxxxx">
         </div>
-        <div>
-            <label>Alamat:</label><br>
-            <textarea name="address" required>{{ old('address') }}</textarea>
+        <div class="mb-3">
+            <label for="address">Alamat:</label>
+            <textarea id="address" name="address" rows="3" required placeholder="Masukkan alamat lengkap...">{{ old('address') }}</textarea>
         </div>
-        <br>
-        <button type="submit">Simpan</button>
-        <a href="{{ route('members.index') }}">Batal</a>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button type="submit" class="btn btn-primary">Simpan</button>
+            <a href="{{ route('members.index') }}" class="btn btn-secondary">Batal</a>
+        </div>
     </form>
-</body>
-</html>
+@endsection

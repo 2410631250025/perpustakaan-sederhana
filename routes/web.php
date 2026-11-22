@@ -33,9 +33,6 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('books', BookController::class);
     Route::resource('members', MemberController::class);
     
-    // Modul Kategori - HANYA MELIHAT (Admin & Petugas)
-    Route::resource('categories', CategoryController::class)->only(['index', 'show']);
-    
     // Modul Peminjaman (Admin & Petugas)
     Route::resource('borrowings', BorrowingController::class)->except(['edit', 'update']);
     Route::put('/borrowings/{id}/return', [BorrowingController::class, 'returnBook'])->name('borrowings.return');
@@ -43,6 +40,7 @@ Route::middleware(['auth'])->group(function () {
     // ==========================================
     // KHUSUS ADMIN (Dilindungi Gate 'isAdmin')
     // ==========================================
+    // Rute admin diletakkan di atas rute 'only' agar /categories/create terbaca lebih dulu
     Route::middleware(['can:isAdmin'])->group(function () {
         
         // Mengelola User
@@ -52,5 +50,11 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('categories', CategoryController::class)->except(['index', 'show']);
         
     });
+
+    // ==========================================
+    // HANYA MELIHAT (Admin & Petugas)
+    // ==========================================
+    // Fungsi 'show' dihapus karena tidak ada halaman detail kategori
+    Route::resource('categories', CategoryController::class)->only(['index']);
     
 });
