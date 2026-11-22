@@ -17,6 +17,10 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            
+            // Tambahan kolom role untuk membedakan admin dan petugas
+            $table->string('role')->default('petugas');
+            
             $table->rememberToken();
             $table->timestamps();
         });

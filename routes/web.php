@@ -9,18 +9,18 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BorrowingController;
 
-// Route Halaman Utama
+// Route Halaman Utama (Redirect ke Login)
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Route Auth Manual (Bisa diakses tanpa login)
+// Route Auth Manual (Hanya untuk Tamu / Belum Login)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 });
 
-// Route yang wajib Login (Auth)
+// Route Wajib Login (Auth)
 Route::middleware(['auth'])->group(function () {
     
     // Route Logout
@@ -29,20 +29,15 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard (Admin & Petugas)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Modul Buku & Anggota (Admin & Petugas bisa mengelola penuh)
+    // Modul Utama (Admin & Petugas)
     Route::resource('books', BookController::class);
     Route::resource('members', MemberController::class);
     
- fitur_borrowing_lanjutan
-    // Modul Peminjaman
-    Route::resource('borrowings', BorrowingController::class);
-
     // Modul Kategori - HANYA MELIHAT (Admin & Petugas)
     Route::resource('categories', CategoryController::class)->only(['index', 'show']);
     
     // Modul Peminjaman (Admin & Petugas)
     Route::resource('borrowings', BorrowingController::class)->except(['edit', 'update']);
- main
     Route::put('/borrowings/{id}/return', [BorrowingController::class, 'returnBook'])->name('borrowings.return');
 
     // ==========================================
