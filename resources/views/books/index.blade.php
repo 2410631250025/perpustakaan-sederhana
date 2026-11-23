@@ -33,10 +33,11 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <table>
+    <table class="table table-bordered align-middle">
         <thead>
             <tr>
                 <th>No</th>
+                <th>Cover</th>
                 <th>Judul Buku</th>
                 <th>Kategori</th>
                 <th>Stok</th>
@@ -46,8 +47,15 @@
         <tbody>
             @forelse($books as $index => $book)
                 <tr>
-                    <td>{{ $books->firstItem() + $index }}</td>
-                    <td><strong>{{ $book->title }}</strong></td>
+                    <td>{{ $loop->iteration }}</td>
+                    <td class="text-center" style="width: 80px;">
+                        @if($book->cover)
+                            <img src="{{ asset('storage/' . $book->cover) }}" alt="{{ $book->title }}" style="width: 50px; height: 70px; object-fit: cover; border-radius: 4px;">
+                        @else
+                            <span class="text-muted small">No Cover</span>
+                        @endif
+                    </td>
+                    <td>{{ $book->title }}</td>
                     <td>{{ $book->category->name ?? 'Tanpa Kategori' }}</td>
                     <td>{{ $book->stock }}</td>
                     <td>
@@ -62,9 +70,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">
-                        Tidak ada data buku yang ditemukan.
-                    </td>
+                    <td colspan="6" class="text-center">Belum ada data buku.</td>
                 </tr>
             @endforelse
         </tbody>

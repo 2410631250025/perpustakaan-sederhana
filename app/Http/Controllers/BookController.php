@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
@@ -19,7 +20,7 @@ class BookController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('author', 'like', "%{$search}%");
+                ->orWhere('author', 'like', "%{$search}%");
             });
         }
 
@@ -48,7 +49,14 @@ class BookController extends Controller
             'stock'       => 'required|integer|min:0',
             'author'      => 'nullable|string|max:255',
             'year'        => 'nullable|integer',
+            'cover'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
+
+        // Simpan file gambar jika ada yang diunggah
+        $coverPath = null;
+        if ($request->hasFile('cover')) {
+            $coverPath = $request->file('cover')->store('covers', 'public');
+        }
 
         Book::create([
             'title'       => $request->title,
@@ -56,6 +64,7 @@ class BookController extends Controller
             'stock'       => $request->stock,
             'author'      => $request->author ?? '-',
             'year'        => $request->year ?? date('Y'),
+            'cover'       => $coverPath,
         ]);
 
         return redirect()->route('books.index')->with('success', 'Buku berhasil ditambahkan!');
@@ -80,15 +89,39 @@ class BookController extends Controller
             'stock'       => 'required|integer|min:0',
             'author'      => 'nullable|string|max:255',
             'year'        => 'nullable|integer',
+            'cover'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
-        $book->update($request->all());
+        // Pertahankan cover lama secara default
+        $coverPath = $book->cover;
+
+        // Jika ada file cover baru yang diunggah, hapus yang lama lalu simpan yang baru
+        if ($request->hasFile('cover')) {
+            if ($book->cover && Storage::disk('public')->exists($book->cover)) {
+                Storage::disk('public')->delete($book->cover);
+            }
+            $coverPath = $request->file('cover')->store('covers', 'public');
+        }
+
+        $book->update([
+            'title'       => $request->title,
+            'category_id' => $request->category_id,
+            'stock'       => $request->stock,
+            'author'      => $request->author ?? '-',
+            'year'        => $request->year ?? date('Y'),
+            'cover'       => $coverPath,
+        ]);
 
         return redirect()->route('books.index')->with('success', 'Buku berhasil diperbarui!');
     }
 
     public function destroy(Book $book)
     {
+        // Hapus file cover dari storage sebelum menghapus data buku
+        if ($book->cover && Storage::disk('public')->exists($book->cover)) {
+            Storage::disk('public')->delete($book->cover);
+        }
+
         $book->delete();
         return redirect()->route('books.index')->with('success', 'Buku berhasil dihapus!');
     }
