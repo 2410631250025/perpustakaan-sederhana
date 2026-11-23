@@ -8,10 +8,30 @@ use Illuminate\Http\Request;
 
 class BookController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $books = Book::with('category')->latest()->get();
-        return view('books.index', compact('books'));
+        $categories = Category::all();
+
+        $query = Book::with('category')->latest();
+
+        // Fitur Pencarian berdasarkan Judul Buku atau Penulis
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('author', 'like', "%{$search}%");
+            });
+        }
+
+        // Fitur Filter berdasarkan Kategori
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        // Fitur Pagination (10 data per halaman)
+        $books = $query->paginate(10)->withQueryString();
+
+        return view('books.index', compact('books', 'categories'));
     }
 
     public function create()
@@ -23,7 +43,7 @@ class BookController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title'       => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'stock'       => 'required|integer|min:0',
             'author'      => 'nullable|string|max:255',
@@ -34,8 +54,8 @@ class BookController extends Controller
             'title'       => $request->title,
             'category_id' => $request->category_id,
             'stock'       => $request->stock,
-            'author'      => $request->author ?? '-', // Mengisi '-' jika di form kosong
-            'year'        => $request->year ?? date('Y'), // Mengisi tahun saat ini jika kosong
+            'author'      => $request->author ?? '-',
+            'year'        => $request->year ?? date('Y'),
         ]);
 
         return redirect()->route('books.index')->with('success', 'Buku berhasil ditambahkan!');
