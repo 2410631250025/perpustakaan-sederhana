@@ -40,6 +40,8 @@
                 <th>Cover</th>
                 <th>Judul Buku</th>
                 <th>Kategori</th>
+                <th>Penulis</th>
+                <th>Tahun Terbit</th>
                 <th>Stok</th>
                 <th>Aksi</th>
             </tr>
@@ -57,6 +59,8 @@
                     </td>
                     <td>{{ $book->title }}</td>
                     <td>{{ $book->category->name ?? 'Tanpa Kategori' }}</td>
+                    <td>{{ $book->author ?? '-' }}</td>
+                    <td>{{ $book->year ?? '-' }}</td>
                     <td>{{ $book->stock }}</td>
                     <td>
                         <a href="{{ route('books.show', $book->id) }}" class="btn btn-info btn-sm">Detail</a>
@@ -70,7 +74,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="text-center">Belum ada data buku.</td>
+                    <td colspan="8" class="text-center">Belum ada data buku.</td>
                 </tr>
             @endforelse
         </tbody>
