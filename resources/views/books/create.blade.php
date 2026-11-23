@@ -4,7 +4,7 @@
 <div class="container">
     <h2>Tambah Buku Baru</h2>
 
-    <form action="{{ route('books.store') }}" method="POST">
+    <form action="{{ route('books.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="mb-3">
             <label for="title" class="form-label">Judul Buku</label>
@@ -29,6 +29,13 @@
             <label for="stock" class="form-label">Stok Buku</label>
             <input type="number" name="stock" id="stock" class="form-control @error('stock') is-invalid @enderror" value="{{ old('stock', 0) }}" min="0" required>
             @error('stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="mb-3">
+            <label for="cover" class="form-label">Cover Buku (Opsional)</label>
+            <input type="file" name="cover" id="cover" class="form-control @error('cover') is-invalid @enderror" accept="image/*">
+            <div class="form-text">Format: JPG, PNG, GIF, WEBP. Maksimal 2MB.</div>
+            @error('cover') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
 
         <button type="submit" class="btn btn-success">Simpan</button>
