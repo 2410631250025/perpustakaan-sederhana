@@ -20,7 +20,6 @@ return new class extends Migration
             
             // Tambahan kolom role untuk membedakan admin dan petugas
             $table->string('role')->default('petugas');
-            
             $table->rememberToken();
             $table->timestamps();
         });

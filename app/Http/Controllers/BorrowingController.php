@@ -8,6 +8,7 @@ use App\Models\Book;
 use App\Models\Member;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class BorrowingController extends Controller
 {
@@ -91,5 +92,13 @@ class BorrowingController extends Controller
             DB::rollback();
             return back()->with('error', 'Gagal memproses pengembalian: ' . $e->getMessage());
         }
+    }
+
+    public function exportPdf()
+    {
+        $borrowings = Borrowing::with(['member', 'user', 'details.book'])->latest()->get();
+        $pdf = Pdf::loadView('borrowings.pdf', compact('borrowings'));
+        $pdf->setPaper('a4', 'landscape');
+        return $pdf->download('laporan-peminjaman-buku.pdf');
     }
 }

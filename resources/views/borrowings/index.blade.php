@@ -4,6 +4,7 @@
 <div class="container">
     <h2>Daftar Peminjaman Buku</h2>
     <a href="{{ route('borrowings.create') }}" class="btn btn-primary mb-3">+ Catat Peminjaman Baru</a>
+    <a href="{{ route('borrowings.exportPdf') }}" class="btn btn-danger mb-3">Export PDF</a>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>

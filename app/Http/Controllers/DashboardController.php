@@ -17,7 +17,7 @@ class DashboardController extends Controller
 
         $totalBorrowed = 0;
         if (Schema::hasTable('borrowings')) {
-            $totalBorrowed = Borrowing::where('status', 'borrowed')->count();
+            $totalBorrowed = Borrowing::where('status', 'Dipinjam')->count();
         }
 
         return view('dashboard.index', compact(

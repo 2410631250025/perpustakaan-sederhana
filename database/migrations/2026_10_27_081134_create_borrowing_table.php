@@ -14,9 +14,11 @@ return new class extends Migration
             $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
             $table->date('borrow_date');
             $table->date('due_date');
+            $table->date('return_date')->nullable();
+            $table->string('status')->default('dipinjam');
             $table->timestamps();
         });
-    }
+}
 
     public function down(): void
     {
