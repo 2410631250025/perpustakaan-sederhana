@@ -7,9 +7,23 @@ use Illuminate\Http\Request;
 
 class MemberController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $members = Member::latest()->paginate(10);
+        $query = Member::latest();
+
+        // Fitur Pencarian berdasarkan Kode Anggota, Nama, atau Email
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Pagination 10 data per halaman dengan menjaga query pencarian
+        $members = $query->paginate(10)->withQueryString();
+
         return view('members.index', compact('members'));
     }
 

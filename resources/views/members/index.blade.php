@@ -5,8 +5,19 @@
 @section('content')
     <h2>Daftar Anggota Perpustakaan</h2>
 
-    <div style="margin-bottom: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 18px;">
         <a href="{{ route('members.create') }}" class="btn btn-primary">+ Tambah Anggota Baru</a>
+
+        {{-- Form Pencarian Anggota --}}
+        <form action="{{ route('members.index') }}" method="GET" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0;">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode, nama, atau email..." style="width: 250px; margin: 0;">
+
+            <button type="submit" class="btn btn-cream">Cari</button>
+
+            @if(request('search'))
+                <a href="{{ route('members.index') }}" class="btn btn-secondary">Reset</a>
+            @endif
+        </form>
     </div>
 
     @if(session('success'))
@@ -42,9 +53,23 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">Belum ada data anggota.</td>
+                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                        Tidak ada data anggota yang ditemukan.
+                    </td>
                 </tr>
             @endforelse
         </tbody>
     </table>
+
+    {{-- Navigasi Pagination --}}
+    @if($members->hasPages())
+        <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <span style="font-size: 13px; color: var(--text-muted);">
+                Menampilkan {{ $members->firstItem() }} - {{ $members->lastItem() }} dari {{ $members->total() }} anggota
+            </span>
+            <div>
+                {{ $members->links() }}
+            </div>
+        </div>
+    @endif
 @endsection

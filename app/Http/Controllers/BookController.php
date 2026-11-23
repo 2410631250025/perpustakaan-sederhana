@@ -9,10 +9,30 @@ use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $books = Book::with('category')->latest()->get();
-        return view('books.index', compact('books'));
+        $categories = Category::all();
+
+        $query = Book::with('category')->latest();
+
+        // Fitur Pencarian berdasarkan Judul Buku atau Penulis
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                ->orWhere('author', 'like', "%{$search}%");
+            });
+        }
+
+        // Fitur Filter berdasarkan Kategori
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        // Fitur Pagination (10 data per halaman)
+        $books = $query->paginate(10)->withQueryString();
+
+        return view('books.index', compact('books', 'categories'));
     }
 
     public function create()
