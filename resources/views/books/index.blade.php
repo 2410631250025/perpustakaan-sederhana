@@ -9,10 +9,11 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <table class="table table-bordered">
+    <table class="table table-bordered align-middle">
         <thead>
             <tr>
                 <th>No</th>
+                <th>Cover</th>
                 <th>Judul Buku</th>
                 <th>Kategori</th>
                 <th>Stok</th>
@@ -23,6 +24,13 @@
             @forelse($books as $book)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
+                    <td class="text-center" style="width: 80px;">
+                        @if($book->cover)
+                            <img src="{{ asset('storage/' . $book->cover) }}" alt="{{ $book->title }}" style="width: 50px; height: 70px; object-fit: cover; border-radius: 4px;">
+                        @else
+                            <span class="text-muted small">No Cover</span>
+                        @endif
+                    </td>
                     <td>{{ $book->title }}</td>
                     <td>{{ $book->category->name ?? 'Tanpa Kategori' }}</td>
                     <td>{{ $book->stock }}</td>
@@ -38,7 +46,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="text-center">Belum ada data buku.</td>
+                    <td colspan="6" class="text-center">Belum ada data buku.</td>
                 </tr>
             @endforelse
         </tbody>
