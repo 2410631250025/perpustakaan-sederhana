@@ -26,6 +26,18 @@
         </div>
 
         <div class="mb-3">
+            <label for="author" class="form-label">Penulis</label>
+            <input type="text" name="author" id="author" class="form-control @error('author') is-invalid @enderror" value="{{ old('author') }}" placeholder="Masukkan nama penulis (opsional)">
+            @error('author') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="mb-3">
+            <label for="year" class="form-label">Tahun Terbit</label>
+            <input type="number" name="year" id="year" class="form-control @error('year') is-invalid @enderror" value="{{ old('year') }}" min="1900" max="{{ date('Y') + 1 }}" placeholder="Contoh: {{ date('Y') }}">
+            @error('year') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="mb-3">
             <label for="stock" class="form-label">Stok Buku</label>
             <input type="number" name="stock" id="stock" class="form-control @error('stock') is-invalid @enderror" value="{{ old('stock', 0) }}" min="0" required>
             @error('stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
