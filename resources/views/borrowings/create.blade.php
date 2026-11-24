@@ -10,7 +10,7 @@
 
     @if($errors->any())
         <div class="alert alert-danger">
-            <ul>
+            <ul class="mb-0">
                 @foreach($errors->all() as $err)
                     <li>{{ $err }}</li>
                 @endforeach
@@ -25,23 +25,28 @@
             <select name="member_id" id="member_id" class="form-control" required>
                 <option value="">-- Pilih Anggota --</option>
                 @foreach($members as $member)
-                    <option value="{{ $member->id }}">{{ $member->name }}</option>
+                    <option value="{{ $member->id }}" {{ old('member_id') == $member->id ? 'selected' : '' }}>
+                        {{ $member->name }}
+                    </option>
                 @endforeach
             </select>
         </div>
 
         <div class="mb-3">
             <label for="borrow_date" class="form-label">Tanggal Peminjaman</label>
-            <input type="date" name="borrow_date" id="borrow_date" class="form-control" value="{{ date('Y-m-d') }}" required>
+            <input type="date" name="borrow_date" id="borrow_date" class="form-control" value="{{ old('borrow_date', date('Y-m-d')) }}" required>
         </div>
 
         <div class="mb-3">
             <label for="due_date" class="form-label">Tanggal Tenggat Pengembalian</label>
-            <input type="date" name="due_date" id="due_date" class="form-control" required>
+            <input type="date" name="due_date" id="due_date" class="form-control" value="{{ old('due_date') }}" required>
         </div>
 
         <hr>
-        <label class="form-label"><strong>Pilih Buku yang Dipinjam</strong></label>
+        <label class="form-label">
+            <strong>Pilih Buku yang Dipinjam</strong>
+            <small class="text-muted">(Maksimal 3 buku)</small>
+        </label>
         
         <div id="book-container">
             <div class="book-row mb-2" style="display: flex; gap: 10px;">
@@ -55,6 +60,7 @@
         </div>
 
         <button type="button" id="add-book-btn" class="btn btn-info btn-sm mb-3">+ Tambah Buku Lain</button>
+        <small id="limit-warning" class="text-danger ms-2" style="display: none;">Maksimal 3 buku per peminjaman.</small>
         <br>
 
         <button type="submit" class="btn btn-success">Simpan Peminjaman</button>
@@ -63,8 +69,26 @@
 </div>
 
 <script>
-    document.getElementById('add-book-btn').addEventListener('click', function() {
-        const container = document.getElementById('book-container');
+    const MAX_BOOKS = 3;
+    const container = document.getElementById('book-container');
+    const addBtn = document.getElementById('add-book-btn');
+    const limitWarning = document.getElementById('limit-warning');
+
+    function updateAddButtonState() {
+        const currentCount = container.querySelectorAll('.book-row').length;
+        if (currentCount >= MAX_BOOKS) {
+            addBtn.disabled = true;
+            limitWarning.style.display = 'inline';
+        } else {
+            addBtn.disabled = false;
+            limitWarning.style.display = 'none';
+        }
+    }
+
+    addBtn.addEventListener('click', function() {
+        const currentCount = container.querySelectorAll('.book-row').length;
+        if (currentCount >= MAX_BOOKS) return;
+
         const firstRow = container.querySelector('.book-row');
         const newRow = firstRow.cloneNode(true);
         
@@ -78,10 +102,12 @@
         removeBtn.innerText = 'Hapus';
         removeBtn.onclick = function() {
             newRow.remove();
+            updateAddButtonState();
         };
         
         newRow.appendChild(removeBtn);
         container.appendChild(newRow);
+        updateAddButtonState();
     });
 </script>
 @endsection

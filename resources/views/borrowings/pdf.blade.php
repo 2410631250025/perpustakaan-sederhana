@@ -29,7 +29,7 @@
 </head>
 <body>
     <h2>Laporan Data Peminjaman Perpustakaan</h2>
-    <p>Tanggal Cetak: {{ date('d-m-Y H:i') }}</p>
+    <p>Tanggal Cetak: {{ now()->format('d-m-Y H:i') }} WIB</p>
 
     <table>
         <thead>

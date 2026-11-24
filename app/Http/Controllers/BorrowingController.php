@@ -31,11 +31,45 @@ class BorrowingController extends Controller
             'member_id'   => 'required|exists:members,id',
             'borrow_date' => 'required|date',
             'due_date'    => 'required|date|after_or_equal:borrow_date',
-            'book_ids'    => 'required|array|min:1',
-            'book_ids.*'  => 'required|exists:books,id|distinct', // distinct mencegah buku yang sama dipilih 2x
+            'book_ids'    => 'required|array|min:1|max:3', // Maksimal 3 buku per transaksi
+            'book_ids.*'  => 'required|exists:books,id|distinct', // Mencegah buku sama dipilih 2x dalam 1 transaksi
         ], [
+            'book_ids.max'        => 'Maksimal peminjaman adalah 3 buku dalam satu transaksi.',
             'book_ids.*.distinct' => 'Tidak boleh memilih judul buku yang sama lebih dari satu kali dalam satu transaksi.'
         ]);
+
+        // 1. Cek apakah anggota sedang meminjam buku yang sama (belum dikembalikan)
+        $bukuSudahDipinjam = Borrowing::where('member_id', $request->member_id)
+            ->where('status', 'Dipinjam')
+            ->with(['details' => function ($query) use ($request) {
+                $query->whereIn('book_id', $request->book_ids)->with('book');
+            }])
+            ->get()
+            ->pluck('details')
+            ->flatten();
+
+        if ($bukuSudahDipinjam->isNotEmpty()) {
+            $judulBuku = $bukuSudahDipinjam->pluck('book.title')->filter()->unique()->implode(', ');
+            return back()
+                ->withInput()
+                ->with('error', "Gagal! Anggota ini masih meminjam buku yang sama dan belum dikembalikan: {$judulBuku}.");
+        }
+
+        // 2. Cek total buku yang saat ini masih berstatus "Dipinjam" oleh anggota tersebut
+        $bukuSedangDipinjam = Borrowing::where('member_id', $request->member_id)
+            ->where('status', 'Dipinjam')
+            ->withCount('details')
+            ->get()
+            ->sum('details_count');
+
+        $jumlahAkanDipinjam = count($request->book_ids);
+
+        if (($bukuSedangDipinjam + $jumlahAkanDipinjam) > 3) {
+            $sisaKuota = max(0, 3 - $bukuSedangDipinjam);
+            return back()
+                ->withInput()
+                ->with('error', "Gagal! Anggota ini sedang meminjam {$bukuSedangDipinjam} buku. Maksimal total pinjaman adalah 3 buku (sisa kuota: {$sisaKuota} buku).");
+        }
 
         DB::beginTransaction();
         try {
@@ -82,7 +116,7 @@ class BorrowingController extends Controller
 
             $borrowing->update([
                 'status'      => 'Dikembalikan',
-                'return_date' => now(),
+                'return_date' => now()->toDateString(),
             ]);
 
             foreach ($borrowing->details as $detail) {
