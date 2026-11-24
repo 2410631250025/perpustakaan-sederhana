@@ -11,6 +11,20 @@ class Borrowing extends Model
 
     protected $guarded = ['id'];
 
+    // Fallback: jika return_date kosong tapi status sudah Dikembalikan, ambil tanggal dari updated_at
+    public function getReturnDateAttribute($value)
+    {
+        if ($value) {
+            return $value;
+        }
+
+        if (strtolower($this->status) === 'dikembalikan' && $this->updated_at) {
+            return $this->updated_at->format('Y-m-d');
+        }
+
+        return null;
+    }
+
     public function member()
     {
         return $this->belongsTo(Member::class);
