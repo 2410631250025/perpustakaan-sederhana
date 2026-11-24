@@ -80,7 +80,10 @@ class BorrowingController extends Controller
                 return back()->with('error', 'Buku sudah dikembalikan sebelumnya.');
             }
 
-            $borrowing->update(['status' => 'Dikembalikan']);
+            $borrowing->update([
+                'status'      => 'Dikembalikan',
+                'return_date' => now(),
+            ]);
 
             foreach ($borrowing->details as $detail) {
                 $detail->book->increment('stock');

@@ -22,6 +22,7 @@
                 <th>Buku Yang Dipinjam</th>
                 <th>Tanggal Pinjam</th>
                 <th>Tenggat (Due Date)</th>
+                <th>Tanggal Kembali</th>
                 <th>Status</th>
                 <th>Petugas</th>
                 <th>Aksi</th>
@@ -41,6 +42,7 @@
                 </td>
                 <td>{{ $borrowing->borrow_date }}</td>
                 <td>{{ $borrowing->due_date }}</td>
+                <td>{{ $borrowing->return_date ?? '-' }}</td>
                 <td>
                     <span>{{ $borrowing->status }}</span>
                 </td>
@@ -59,7 +61,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="8" class="text-center">Belum ada data peminjaman.</td>
+                <td colspan="9" class="text-center">Belum ada data peminjaman.</td>
             </tr>
             @endforelse
         </tbody>
